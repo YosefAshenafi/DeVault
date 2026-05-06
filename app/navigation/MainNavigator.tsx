@@ -5,13 +5,23 @@ import { AddEditResourceScreen } from '../screens/AddEditResourceScreen';
 import { DetailScreen } from '../screens/DetailScreen';
 import { HomeScreen } from '../screens/HomeScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
+import { useTheme } from '../theme/ThemeContext';
 import type { MainStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
 
 function MainStack() {
+  const { colors } = useTheme();
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: colors.surface },
+        headerTintColor: colors.text,
+        headerTitleStyle: { color: colors.text },
+        headerShadowVisible: true,
+        contentStyle: { backgroundColor: colors.background },
+      }}
+    >
       <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Detail" component={DetailScreen} options={{ title: 'Resource' }} />
       <Stack.Screen

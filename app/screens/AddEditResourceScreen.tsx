@@ -1,6 +1,7 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppButton } from '../components/AppButton';
 import { AppTextInput } from '../components/AppTextInput';
@@ -127,6 +128,25 @@ export function AddEditResourceScreen() {
         contentContainerStyle={{ padding: spacing.lg, paddingBottom: spacing.xxl }}
         keyboardShouldPersistTaps="handled"
       >
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+          onPress={() => navigation.goBack()}
+          hitSlop={12}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            alignSelf: 'flex-start',
+            marginBottom: spacing.md,
+            gap: spacing.xs,
+          }}
+        >
+          <Ionicons name="chevron-back" size={22} color={colors.primary} />
+          <ThemedText color="primary" style={{ fontSize: 17 }}>
+            Back
+          </ThemedText>
+        </Pressable>
+
         <ThemedText variant="title" style={{ marginBottom: spacing.md }}>
           {editId ? 'Edit resource' : sharePayload ? 'Add from share' : 'Add resource'}
         </ThemedText>

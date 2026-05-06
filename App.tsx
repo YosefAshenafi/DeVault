@@ -6,11 +6,24 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { tokenCache } from './app/clerk/tokenCache';
 import { RootNavigator } from './app/navigation/RootNavigator';
 import { ShareIntentProvider } from './app/share/ShareIntentContext';
-import { ThemeProvider } from './app/theme/ThemeContext';
+import { ThemeProvider, useTheme } from './app/theme/ThemeContext';
 
 WebBrowser.maybeCompleteAuthSession();
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ?? '';
+
+function ThemedChrome() {
+  const { colors, resolved } = useTheme();
+  return (
+    <>
+      <StatusBar
+        style={resolved === 'dark' ? 'light' : 'dark'}
+        backgroundColor={colors.background}
+      />
+      <RootNavigator />
+    </>
+  );
+}
 
 function MissingClerkKey() {
   return (
@@ -38,8 +51,7 @@ export default function App() {
       <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
         <ThemeProvider>
           <SafeAreaProvider>
-            <StatusBar style="auto" />
-            <RootNavigator />
+            <ThemedChrome />
           </SafeAreaProvider>
         </ThemeProvider>
       </ClerkProvider>

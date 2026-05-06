@@ -108,7 +108,7 @@ export function HomeScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={{
             paddingHorizontal: spacing.lg,
-            paddingBottom: 100,
+            paddingBottom: 120,
           }}
           refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} />}
           ListEmptyComponent={
@@ -127,8 +127,8 @@ export function HomeScreen() {
         onPress={() => navigation.navigate('AddEdit', { requireUrl: false })}
         style={{
           position: 'absolute',
-          right: spacing.lg,
-          bottom: spacing.xl,
+          right: spacing.xl,
+          bottom: spacing.xl + spacing.lg,
           width: 56,
           height: 56,
           borderRadius: 28,
