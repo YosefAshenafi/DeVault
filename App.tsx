@@ -1,20 +1,59 @@
+import { ClerkProvider } from '@clerk/clerk-expo';
+import * as WebBrowser from 'expo-web-browser';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { tokenCache } from './app/clerk/tokenCache';
+import { RootNavigator } from './app/navigation/RootNavigator';
+import { ShareIntentProvider } from './app/share/ShareIntentContext';
+import { ThemeProvider } from './app/theme/ThemeContext';
 
-export default function App() {
+WebBrowser.maybeCompleteAuthSession();
+
+const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ?? '';
+
+function MissingClerkKey() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
+    <View style={styles.center}>
+      <Text style={styles.title}>Configure Clerk</Text>
+      <Text style={styles.body}>
+        Create a `.env` file with EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY from your Clerk dashboard. See
+        `.env.example`.
+      </Text>
     </View>
   );
 }
 
+export default function App() {
+  if (!publishableKey) {
+    return (
+      <SafeAreaProvider>
+        <MissingClerkKey />
+      </SafeAreaProvider>
+    );
+  }
+
+  return (
+    <ShareIntentProvider>
+      <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
+        <ThemeProvider>
+          <SafeAreaProvider>
+            <StatusBar style="auto" />
+            <RootNavigator />
+          </SafeAreaProvider>
+        </ThemeProvider>
+      </ClerkProvider>
+    </ShareIntentProvider>
+  );
+}
+
 const styles = StyleSheet.create({
-  container: {
+  center: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
     justifyContent: 'center',
+    padding: 24,
+    backgroundColor: '#fff',
   },
+  title: { fontSize: 20, fontWeight: '600', marginBottom: 12 },
+  body: { fontSize: 15, color: '#444', lineHeight: 22 },
 });
