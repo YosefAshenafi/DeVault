@@ -1,4 +1,5 @@
 import { ClerkProvider } from '@clerk/clerk-expo';
+import Constants from 'expo-constants';
 import * as WebBrowser from 'expo-web-browser';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
@@ -10,7 +11,15 @@ import { ThemeProvider, useTheme } from './app/theme/ThemeContext';
 
 WebBrowser.maybeCompleteAuthSession();
 
-const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ?? '';
+type AppExtra = { clerkPublishableKey?: string };
+
+const extra = Constants.expoConfig?.extra as AppExtra | undefined;
+/** Prefer native `extra` (set at prebuild / EAS) so release APKs work without Metro env. */
+const publishableKey = (
+  extra?.clerkPublishableKey ||
+  process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ||
+  ''
+).trim();
 
 function ThemedChrome() {
   const { colors, resolved } = useTheme();
@@ -30,8 +39,9 @@ function MissingClerkKey() {
     <View style={styles.center}>
       <Text style={styles.title}>Configure Clerk</Text>
       <Text style={styles.body}>
-        Create a `.env` file with EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY from your Clerk dashboard. See
-        `.env.example`.
+        Set EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY (Clerk publishable key, not a secret key) in `.env`, then
+        run `npm run android:apk:release` so prebuild embeds it. For EAS cloud builds, add the same
+        variable under your Expo project → Environment variables. See `.env.example`.
       </Text>
     </View>
   );
