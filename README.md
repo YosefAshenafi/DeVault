@@ -60,9 +60,30 @@ Developer content vault and knowledge notebook built with **Expo** (React Native
 ## Troubleshooting
 
 - **`EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` missing** — The app shows a setup screen until `.env` is configured. Restart the dev server after changing env vars.
+- **Clerk key in release APK** — Use `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` (Clerk publishable key). For local release APKs, run `npm run android:apk:release` so prebuild embeds it into native config.
+- **EAS cloud build env vars** — `.env` is local and gitignored; for cloud builds add `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` in your Expo project Environment Variables.
 - **npm peer dependency errors with Clerk** — This repo uses `legacy-peer-deps` via `.npmrc`. If you remove it, try `npm install --legacy-peer-deps`.
 - **OAuth redirect** — If Google sign-in fails after the browser step, confirm `devault://oauth-callback` is allowed in Clerk and that `scheme` in `app.config.ts` stays `devault`.
 - **Health check** — `npx expo-doctor` should pass. If you see duplicate native modules, run `npm dedupe` and reinstall if needed.
+
+## Android release APK (local)
+
+Use this when you want repeatable testing builds without EAS cloud:
+
+```bash
+npm run android:apk:release
+```
+
+This runs prebuild and Gradle release assembly, and outputs:
+
+`android/app/build/outputs/apk/release/app-release.apk`
+
+Helpful related scripts:
+
+```bash
+npm run android:prebuild    # refresh android/ from app config
+npm run android:apk:gradle  # build release APK from existing android/ project
+```
 
 ## Git / GitHub
 
