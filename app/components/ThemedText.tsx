@@ -23,13 +23,24 @@ export function ThemedText({
             : colors.text;
 
   const fontSize =
-    variant === 'title' ? 22 : variant === 'subtitle' ? 17 : variant === 'caption' ? 12 : variant === 'label' ? 13 : 15;
+    variant === 'title' ? 32 : variant === 'subtitle' ? 21 : variant === 'caption' ? 13 : variant === 'label' ? 16 : 17;
   const fontWeight =
-    variant === 'title' || variant === 'subtitle' || variant === 'label' ? '600' : '400';
+    variant === 'title' ? '700' : variant === 'subtitle' || variant === 'label' ? '600' : '400';
+  const lineHeight =
+    variant === 'title' ? 40 : variant === 'subtitle' ? 29 : variant === 'caption' ? 18 : variant === 'label' ? 22 : 25;
 
   return (
     <Text
-      style={[{ color: colorVal, fontSize, fontWeight: fontWeight as '400' | '600' }, style]}
+      style={[
+        {
+          color: colorVal,
+          fontSize,
+          lineHeight,
+          fontWeight: fontWeight as '400' | '600' | '700',
+          letterSpacing: variant === 'title' ? -0.3 : 0,
+        },
+        style,
+      ]}
       {...rest}
     />
   );

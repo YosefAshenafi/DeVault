@@ -2,8 +2,10 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ResourcesProvider } from '../context/ResourcesContext';
 import { useAuthUser } from '../hooks/useAuthUser';
 import { AddEditResourceScreen } from '../screens/AddEditResourceScreen';
+import { DiscoverScreen } from '../screens/DiscoverScreen';
 import { DetailScreen } from '../screens/DetailScreen';
 import { HomeScreen } from '../screens/HomeScreen';
+import { SavedScreen } from '../screens/SavedScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { useTheme } from '../theme/ThemeContext';
 import type { MainStackParamList } from './types';
@@ -23,6 +25,8 @@ function MainStack() {
       }}
     >
       <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Discover" component={DiscoverScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Saved" component={SavedScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Detail" component={DetailScreen} options={{ title: 'Resource' }} />
       <Stack.Screen
         name="AddEdit"

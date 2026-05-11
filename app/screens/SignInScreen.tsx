@@ -2,8 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { isClerkAPIResponseError } from '@clerk/clerk-expo';
 import { useSSO, useSignIn, useSignUp } from '@clerk/clerk-expo';
 import * as Linking from 'expo-linking';
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppButton } from '../components/AppButton';
 import { AppLogo } from '../components/AppLogo';
@@ -14,7 +14,7 @@ import { useTheme } from '../theme/ThemeContext';
 
 const GOOGLE_G_BLUE = '#4285F4';
 
-export function SignInScreen({ route }: AuthScreenProps<'SignIn'>) {
+export function SignInScreen({ route, navigation }: AuthScreenProps<'SignIn'>) {
   const { colors, spacing } = useTheme();
   const { signIn, setActive, isLoaded: signInLoaded } = useSignIn();
   const { signUp, setActive: setActiveSignUp, isLoaded: signUpLoaded } = useSignUp();
@@ -27,17 +27,23 @@ export function SignInScreen({ route }: AuthScreenProps<'SignIn'>) {
   const [pendingVerification, setPendingVerification] = useState(false);
   const [busy, setBusy] = useState(false);
   const [emailFormVisible, setEmailFormVisible] = useState(() => route.params?.startGoogle !== true);
+  const didAutoGoogleAttempt = useRef(false);
 
   const startGoogle = route.params?.startGoogle === true;
 
   useEffect(() => {
     setEmailFormVisible(route.params?.startGoogle !== true);
+    if (route.params?.startGoogle !== true) {
+      didAutoGoogleAttempt.current = false;
+    }
   }, [route.params?.startGoogle]);
 
   useEffect(() => {
-    if (!startGoogle || !signInLoaded) return;
+    if (!startGoogle || !signInLoaded || didAutoGoogleAttempt.current) return;
     let cancelled = false;
     void (async () => {
+      didAutoGoogleAttempt.current = true;
+      navigation.setParams({ startGoogle: false });
       setBusy(true);
       try {
         const redirect = Linking.createURL('oauth-callback', { scheme: 'devault' });
@@ -52,6 +58,7 @@ export function SignInScreen({ route }: AuthScreenProps<'SignIn'>) {
       } catch (e) {
         if (!cancelled) {
           setEmailFormVisible(true);
+          didAutoGoogleAttempt.current = false;
           const msg = e instanceof Error ? e.message : 'Google sign-in failed';
           Alert.alert('Sign in', msg);
         }
@@ -62,7 +69,7 @@ export function SignInScreen({ route }: AuthScreenProps<'SignIn'>) {
     return () => {
       cancelled = true;
     };
-  }, [startGoogle, signInLoaded, startSSOFlow]);
+  }, [navigation, startGoogle, signInLoaded, startSSOFlow]);
 
   const onGoogle = async () => {
     setBusy(true);
@@ -168,7 +175,7 @@ export function SignInScreen({ route }: AuthScreenProps<'SignIn'>) {
               width: 88,
               height: 88,
               borderRadius: 44,
-              backgroundColor: colors.surfaceElevated,
+              backgroundColor: colors.surface,
               alignItems: 'center',
               justifyContent: 'center',
               marginBottom: spacing.lg,
@@ -178,7 +185,7 @@ export function SignInScreen({ route }: AuthScreenProps<'SignIn'>) {
           >
             <Ionicons name="logo-google" size={44} color={GOOGLE_G_BLUE} />
           </View>
-          <AppLogo size={56} style={{ marginBottom: spacing.md }} />
+          <AppLogo size={64} style={{ marginBottom: spacing.md }} />
           <ThemedText variant="title" style={{ textAlign: 'center', marginBottom: spacing.sm }}>
             Sign in with Google
           </ThemedText>
@@ -210,62 +217,102 @@ export function SignInScreen({ route }: AuthScreenProps<'SignIn'>) {
           keyboardShouldPersistTaps="handled"
         >
           <View style={{ alignItems: 'center', marginBottom: spacing.lg }}>
-            <AppLogo size={72} />
+            <AppLogo size={80} />
+            <ThemedText variant="subtitle" style={{ marginTop: spacing.sm }}>
+              DevVault
+            </ThemedText>
           </View>
-          <ThemedText variant="title" style={{ marginBottom: spacing.sm }}>
-            {pendingVerification ? 'Check your email' : mode === 'signIn' ? 'Welcome back' : 'Create account'}
-          </ThemedText>
-          <ThemedText color="secondary" style={{ marginBottom: spacing.xl }}>
-            {pendingVerification
-              ? 'Enter the code we sent to your email.'
-              : 'Sign in to sync your identity. Your vault stays on this device.'}
-          </ThemedText>
+          <View
+            style={{
+              backgroundColor: colors.surfaceElevated,
+              borderRadius: 24,
+              padding: spacing.xl,
+              borderWidth: 1,
+              borderColor: colors.border,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 8 },
+              shadowOpacity: 0.08,
+              shadowRadius: 16,
+              elevation: 8,
+            }}
+          >
+            <ThemedText variant="title" style={{ marginBottom: spacing.sm, textAlign: 'center', fontSize: 30, lineHeight: 36 }}>
+              {pendingVerification ? 'Check your email' : mode === 'signIn' ? 'Welcome back.' : 'Create account'}
+            </ThemedText>
+            <ThemedText color="secondary" style={{ marginBottom: spacing.lg, textAlign: 'center' }}>
+              {pendingVerification
+                ? 'Enter the code we sent to your email.'
+                : 'Sign in to your workspace.'}
+            </ThemedText>
 
-          {pendingVerification ? (
-            <>
-              <AppTextInput label="Verification code" value={code} onChangeText={setCode} autoCapitalize="none" />
-              <AppButton title="Verify & continue" onPress={onVerify} loading={busy} />
-            </>
-          ) : (
-            <>
-              <AppTextInput
-                label="Email"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                keyboardType="email-address"
-              />
-              <AppTextInput
-                label="Password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-              />
-              <AppButton
-                title={mode === 'signIn' ? 'Sign in' : 'Sign up'}
-                leftIcon={<Ionicons name="mail-outline" size={22} color={colors.primaryText} />}
-                onPress={mode === 'signIn' ? onSignIn : onSignUp}
-                loading={busy}
-              />
-              <View style={{ height: spacing.md }} />
-              <AppButton
-                title="Continue with Google"
-                variant="google"
-                leftIcon={<Ionicons name="logo-google" size={22} color={GOOGLE_G_BLUE} />}
-                onPress={onGoogle}
-                loading={busy}
-              />
-              <View style={{ height: spacing.lg }} />
-              <AppButton
-                title={mode === 'signIn' ? 'Need an account? Sign up' : 'Have an account? Sign in'}
-                variant="ghost"
-                onPress={() => {
-                  setMode(mode === 'signIn' ? 'signUp' : 'signIn');
-                  setPendingVerification(false);
-                }}
-              />
-            </>
-          )}
+            {pendingVerification ? (
+              <>
+                <AppTextInput label="Verification code" value={code} onChangeText={setCode} autoCapitalize="none" />
+                <AppButton title="Verify & continue" onPress={onVerify} loading={busy} />
+              </>
+            ) : (
+              <>
+                <AppButton
+                  title="Continue with Google"
+                  variant="google"
+                  leftIcon={<Ionicons name="logo-google" size={22} color={GOOGLE_G_BLUE} />}
+                  onPress={onGoogle}
+                  loading={busy}
+                />
+                <View style={{ height: spacing.md }} />
+                <ThemedText color="muted" style={{ textAlign: 'center', marginBottom: spacing.md }}>
+                  or email
+                </ThemedText>
+                <AppTextInput
+                  label="Email"
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                />
+                <AppTextInput
+                  label="Password"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry
+                />
+                {mode === 'signIn' ? (
+                  <Pressable onPress={() => Alert.alert('Reset password', 'Use "Create Account" if you need a new login, or reset password from Clerk dashboard.')}>
+                    <ThemedText color="primary" style={{ textAlign: 'right', marginTop: -spacing.xs, marginBottom: spacing.md }}>
+                      Forgot?
+                    </ThemedText>
+                  </Pressable>
+                ) : null}
+                <AppButton
+                  title={mode === 'signIn' ? 'Sign In' : 'Create Account'}
+                  leftIcon={<Ionicons name="mail-outline" size={22} color={colors.primaryText} />}
+                  onPress={mode === 'signIn' ? onSignIn : onSignUp}
+                  loading={busy}
+                />
+                <View style={{ height: spacing.md }} />
+                <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                  <ThemedText color="secondary">
+                    {mode === 'signIn' ? "Don't have an account? " : 'Have an account? '}
+                  </ThemedText>
+                  <Pressable
+                    onPress={() => {
+                      setMode(mode === 'signIn' ? 'signUp' : 'signIn');
+                      setPendingVerification(false);
+                    }}
+                  >
+                    <ThemedText color="primary">
+                      {mode === 'signIn' ? 'Create Account' : 'Sign In'}
+                    </ThemedText>
+                  </Pressable>
+                </View>
+              </>
+            )}
+          </View>
+          <View style={{ flexDirection: 'row', justifyContent: 'center', gap: spacing.md, marginTop: spacing.lg }}>
+            <ThemedText variant="caption" color="muted">Terms</ThemedText>
+            <ThemedText variant="caption" color="muted">Privacy</ThemedText>
+            <ThemedText variant="caption" color="muted">Help</ThemedText>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

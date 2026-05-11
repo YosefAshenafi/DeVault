@@ -1,6 +1,9 @@
 export type PageMetadata = {
   title?: string;
   thumbnailUrl?: string;
+  description?: string;
+  siteName?: string;
+  favicon?: string;
 };
 
 function decodeHtmlEntities(s: string): string {
@@ -39,6 +42,33 @@ function youtubeThumb(url: string): string | null {
   const id = extractYoutubeVideoId(url);
   if (!id) return null;
   return `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+}
+
+function matchMetaName(html: string, name: string): string | null {
+  const re = new RegExp(
+    `<meta[^>]+name=["']${name}["'][^>]+content=["']([^"']*)["'][^>]*>`,
+    'i',
+  );
+  const m = html.match(re);
+  if (m?.[1]) return decodeHtmlEntities(m[1]);
+  const re2 = new RegExp(
+    `<meta[^>]+content=["']([^"']*)["'][^>]+name=["']${name}["'][^>]*>`,
+    'i',
+  );
+  const m2 = html.match(re2);
+  return m2?.[1] ? decodeHtmlEntities(m2[1]) : null;
+}
+
+function matchFavicon(html: string, baseUrl: string): string | null {
+  const re = /<link[^>]+rel=["'](?:shortcut )?icon["'][^>]+href=["']([^"']+)["'][^>]*>/i;
+  const re2 = /<link[^>]+href=["']([^"']+)["'][^>]+rel=["'](?:shortcut )?icon["'][^>]*>/i;
+  const href = html.match(re)?.[1] ?? html.match(re2)?.[1];
+  if (!href) return null;
+  try {
+    return new URL(href, baseUrl).toString();
+  } catch {
+    return null;
+  }
 }
 
 function matchMeta(html: string, prop: string): string | null {
@@ -83,12 +113,21 @@ export async function fetchPageMetadata(url: string, timeoutMs = 12_000): Promis
     const html = await res.text();
     const ogTitle = matchMeta(html, 'og:title');
     const ogImage = matchMeta(html, 'og:image');
+    const ogDescription = matchMeta(html, 'og:description');
+    const ogSiteName = matchMeta(html, 'og:site_name');
+    const metaDescription = matchMetaName(html, 'description');
     const docTitle = matchTitle(html);
     const title = (ogTitle ?? docTitle)?.trim();
     const thumbnailUrl = ogImage?.trim() || yt || undefined;
+    const description = (ogDescription ?? metaDescription)?.trim() || undefined;
+    const siteName = ogSiteName?.trim() || undefined;
+    const favicon = matchFavicon(html, url) || undefined;
     return {
       ...(title ? { title } : {}),
       ...(thumbnailUrl ? { thumbnailUrl } : {}),
+      ...(description ? { description } : {}),
+      ...(siteName ? { siteName } : {}),
+      ...(favicon ? { favicon } : {}),
     };
   } catch {
     return yt ? { thumbnailUrl: yt } : {};

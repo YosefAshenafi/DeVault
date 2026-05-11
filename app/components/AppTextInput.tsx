@@ -25,10 +25,10 @@ export function AppTextInput({ label, error, style, ...rest }: Props) {
             borderColor: error ? colors.danger : colors.border,
             borderRadius: radii.md,
             paddingHorizontal: spacing.md,
-            paddingVertical: spacing.sm,
+            paddingVertical: spacing.md,
             color: colors.text,
-            backgroundColor: colors.surface,
-            fontSize: 16,
+            backgroundColor: colors.surfaceElevated,
+            fontSize: 17,
           },
           style,
         ]}

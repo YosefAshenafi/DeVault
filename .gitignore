@@ -34,6 +34,9 @@ yarn-error.*
 .env
 .env*.local
 
+# Cursor MCP config (contains local API keys / secrets)
+.cursor/mcp.json
+
 # Internal / local-only docs & scratch (keep off GitHub)
 Plan.md
 .tmp/

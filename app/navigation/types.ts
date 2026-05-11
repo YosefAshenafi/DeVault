@@ -9,6 +9,8 @@ export type AuthStackParamList = {
 
 export type MainStackParamList = {
   Home: undefined;
+  Discover: undefined;
+  Saved: undefined;
   Detail: { id: string };
   AddEdit: {
     id?: string;

@@ -10,6 +10,9 @@ type ResourceRow = {
   note: string;
   tags: string;
   thumbnailUrl: string | null;
+  description: string | null;
+  siteName: string | null;
+  favicon: string | null;
   createdAt: number;
   updatedAt: number;
 };
@@ -23,6 +26,9 @@ function rowToResource(row: ResourceRow): Resource {
     note: row.note,
     tags: row.tags,
     thumbnailUrl: row.thumbnailUrl,
+    description: row.description ?? null,
+    siteName: row.siteName ?? null,
+    favicon: row.favicon ?? null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -41,8 +47,8 @@ export async function createResource(userId: string, input: ResourceInput): Prom
   const now = Date.now();
   const id = Crypto.randomUUID();
   await db.runAsync(
-    `INSERT INTO resources (id, userId, title, url, note, tags, thumbnailUrl, createdAt, updatedAt)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO resources (id, userId, title, url, note, tags, thumbnailUrl, description, siteName, favicon, createdAt, updatedAt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     id,
     userId,
     input.title,
@@ -50,6 +56,9 @@ export async function createResource(userId: string, input: ResourceInput): Prom
     input.note,
     input.tags,
     input.thumbnailUrl,
+    input.description,
+    input.siteName,
+    input.favicon,
     now,
     now,
   );
@@ -66,13 +75,16 @@ export async function updateResource(
   const db = await getDatabase();
   const now = Date.now();
   const result = await db.runAsync(
-    `UPDATE resources SET title = ?, url = ?, note = ?, tags = ?, thumbnailUrl = ?, updatedAt = ?
+    `UPDATE resources SET title = ?, url = ?, note = ?, tags = ?, thumbnailUrl = ?, description = ?, siteName = ?, favicon = ?, updatedAt = ?
      WHERE id = ? AND userId = ?`,
     input.title,
     input.url,
     input.note,
     input.tags,
     input.thumbnailUrl,
+    input.description,
+    input.siteName,
+    input.favicon,
     now,
     id,
     userId,
@@ -169,13 +181,16 @@ export async function upsertResourceWithId(
   );
   if (existing) {
     await db.runAsync(
-      `UPDATE resources SET title = ?, url = ?, note = ?, tags = ?, thumbnailUrl = ?, updatedAt = ?
+      `UPDATE resources SET title = ?, url = ?, note = ?, tags = ?, thumbnailUrl = ?, description = ?, siteName = ?, favicon = ?, updatedAt = ?
        WHERE id = ? AND userId = ?`,
       input.title,
       input.url,
       input.note,
       input.tags,
       input.thumbnailUrl,
+      input.description,
+      input.siteName,
+      input.favicon,
       now,
       id,
       userId,
@@ -183,8 +198,8 @@ export async function upsertResourceWithId(
   } else {
     const createdAt = options.createdAt ?? now;
     await db.runAsync(
-      `INSERT INTO resources (id, userId, title, url, note, tags, thumbnailUrl, createdAt, updatedAt)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO resources (id, userId, title, url, note, tags, thumbnailUrl, description, siteName, favicon, createdAt, updatedAt)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       id,
       userId,
       input.title,
@@ -192,6 +207,9 @@ export async function upsertResourceWithId(
       input.note,
       input.tags,
       input.thumbnailUrl,
+      input.description,
+      input.siteName,
+      input.favicon,
       createdAt,
       now,
     );
@@ -210,8 +228,8 @@ export async function insertResourceWithId(
 ): Promise<Resource> {
   const db = await getDatabase();
   await db.runAsync(
-    `INSERT INTO resources (id, userId, title, url, note, tags, thumbnailUrl, createdAt, updatedAt)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO resources (id, userId, title, url, note, tags, thumbnailUrl, description, siteName, favicon, createdAt, updatedAt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     id,
     userId,
     input.title,
@@ -219,6 +237,9 @@ export async function insertResourceWithId(
     input.note,
     input.tags,
     input.thumbnailUrl,
+    input.description,
+    input.siteName,
+    input.favicon,
     createdAt,
     updatedAt,
   );

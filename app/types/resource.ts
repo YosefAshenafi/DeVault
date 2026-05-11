@@ -6,6 +6,9 @@ export type Resource = {
   note: string;
   tags: string;
   thumbnailUrl: string | null;
+  description: string | null;
+  siteName: string | null;
+  favicon: string | null;
   createdAt: number;
   updatedAt: number;
 };
@@ -16,6 +19,9 @@ export type ResourceInput = {
   note: string;
   tags: string;
   thumbnailUrl: string | null;
+  description: string | null;
+  siteName: string | null;
+  favicon: string | null;
 };
 
 export type SharePayload = {

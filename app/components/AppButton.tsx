@@ -61,11 +61,16 @@ export function AppButton({
           {
             backgroundColor: bg,
             borderRadius: radii.md,
-            paddingVertical: spacing.md,
+            paddingVertical: spacing.md + 2,
             paddingHorizontal: spacing.lg,
             borderWidth: variant === 'secondary' || variant === 'google' ? 1 : 0,
             borderColor,
             opacity: state.pressed ? 0.85 : disabled ? 0.5 : 1,
+            shadowColor: isPrimary ? colors.primary : '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: isPrimary ? 0.22 : 0.06,
+            shadowRadius: 8,
+            elevation: isPrimary ? 3 : 1,
           },
           extra,
         ];
@@ -77,13 +82,13 @@ export function AppButton({
       ) : leftIcon ? (
         <View style={styles.row}>
           <View style={styles.iconSlot}>{leftIcon}</View>
-          <ThemedText variant="label" style={{ color: textColor, textAlign: 'center', flex: 1 }}>
+          <ThemedText variant="label" style={{ color: textColor, textAlign: 'center', flex: 1, fontSize: 17 }}>
             {title}
           </ThemedText>
           <View style={styles.iconSlot} />
         </View>
       ) : (
-        <ThemedText variant="label" style={{ color: textColor, textAlign: 'center' }}>
+        <ThemedText variant="label" style={{ color: textColor, textAlign: 'center', fontSize: 17 }}>
           {title}
         </ThemedText>
       )}

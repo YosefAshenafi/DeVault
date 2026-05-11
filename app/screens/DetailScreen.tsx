@@ -2,9 +2,10 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as Linking from 'expo-linking';
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, Pressable, ScrollView, View } from 'react-native';
+import { Alert, Image, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppButton } from '../components/AppButton';
+import { AppFooter } from '../components/AppFooter';
 import { TagChip } from '../components/TagChip';
 import { ThemedText } from '../components/ThemedText';
 import { ThumbnailPreview } from '../components/ThumbnailPreview';
@@ -71,7 +72,7 @@ export function DetailScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ paddingBottom: spacing.xxl }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: spacing.xxl + 96 }}>
         <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.md }}>
           <Pressable onPress={() => navigation.goBack()} hitSlop={12} style={{ marginBottom: spacing.md }}>
             <ThemedText color="primary">← Back</ThemedText>
@@ -85,6 +86,9 @@ export function DetailScreen() {
           <ThemedText variant="title" style={{ marginTop: spacing.lg }}>
             {resource.title}
           </ThemedText>
+          <ThemedText variant="caption" color="secondary" style={{ marginTop: spacing.xs }}>
+            {tags.length ? `${tags.length} tags` : 'No tags'}
+          </ThemedText>
           {resource.url ? (
             <Pressable onPress={onOpenLink} style={{ marginTop: spacing.sm }}>
               <ThemedText color="primary" numberOfLines={2}>
@@ -92,10 +96,54 @@ export function DetailScreen() {
               </ThemedText>
             </Pressable>
           ) : null}
+          {(resource.siteName || resource.favicon) ? (
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: spacing.sm, gap: spacing.xs }}>
+              {resource.favicon ? (
+                <Image
+                  source={{ uri: resource.favicon }}
+                  style={{ width: 16, height: 16, borderRadius: 2 }}
+                />
+              ) : null}
+              {resource.siteName ? (
+                <ThemedText variant="caption" color="secondary">{resource.siteName}</ThemedText>
+              ) : null}
+            </View>
+          ) : null}
           <ThemedText variant="caption" color="muted" style={{ marginTop: spacing.md }}>
             Added {created}
           </ThemedText>
-          <ThemedText style={{ marginTop: spacing.lg, lineHeight: 22 }}>{resource.note || '—'}</ThemedText>
+          {resource.description ? (
+            <View
+              style={{
+                marginTop: spacing.md,
+                backgroundColor: colors.surfaceElevated,
+                borderWidth: 1,
+                borderColor: colors.border,
+                borderRadius: radii.lg,
+                padding: spacing.md,
+              }}
+            >
+              <ThemedText variant="caption" color="secondary" style={{ marginBottom: spacing.xs }}>
+                Description
+              </ThemedText>
+              <ThemedText style={{ lineHeight: 20 }}>{resource.description}</ThemedText>
+            </View>
+          ) : null}
+          <View
+            style={{
+              marginTop: spacing.lg,
+              backgroundColor: colors.surfaceElevated,
+              borderWidth: 1,
+              borderColor: colors.border,
+              borderRadius: radii.lg,
+              padding: spacing.lg,
+            }}
+          >
+            <ThemedText variant="caption" color="secondary" style={{ marginBottom: spacing.xs }}>
+              Notes
+            </ThemedText>
+            <ThemedText style={{ lineHeight: 22 }}>{resource.note || '—'}</ThemedText>
+          </View>
           {tags.length > 0 ? (
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: spacing.lg }}>
               {tags.map((t) => (
@@ -114,6 +162,9 @@ export function DetailScreen() {
           </View>
         </View>
       </ScrollView>
+      <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}>
+        <AppFooter current="Home" />
+      </View>
     </SafeAreaView>
   );
 }

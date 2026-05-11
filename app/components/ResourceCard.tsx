@@ -27,19 +27,20 @@ export function ResourceCard({ resource, onPress }: Props) {
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      style={{
-        backgroundColor: colors.surface,
+      style={({ pressed }) => ({
+        backgroundColor: colors.surfaceElevated,
         borderRadius: radii.lg,
         marginBottom: spacing.md,
         overflow: 'hidden',
         borderWidth: 1,
         borderColor: colors.border,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 6,
-        elevation: 2,
-      }}
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: pressed ? 0.04 : 0.1,
+        shadowRadius: 12,
+        elevation: pressed ? 1 : 4,
+        transform: [{ scale: pressed ? 0.985 : 1 }],
+      })}
     >
       <View style={{ flexDirection: 'row', padding: spacing.md, gap: spacing.md }}>
         <View style={{ width: 96 }}>

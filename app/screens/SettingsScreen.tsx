@@ -5,7 +5,9 @@ import * as Sharing from 'expo-sharing';
 import { useState } from 'react';
 import { Alert, Image, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { AppButton } from '../components/AppButton';
+import { AppFooter } from '../components/AppFooter';
 import { ThemedText } from '../components/ThemedText';
 import { exportResourcesToJson, importResourcesFromJson } from '../data/exportImport';
 import { useResourcesContext } from '../context/ResourcesContext';
@@ -80,9 +82,12 @@ export function SettingsScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, paddingBottom: spacing.xxl }}>
-        <ThemedText variant="title" style={{ marginBottom: spacing.lg }}>
+      <ScrollView contentContainerStyle={{ padding: spacing.lg, paddingBottom: spacing.xxl + 96 }}>
+        <ThemedText variant="title" style={{ marginBottom: spacing.sm }}>
           Settings
+        </ThemedText>
+        <ThemedText color="secondary" style={{ marginBottom: spacing.lg }}>
+          Manage your account and vault preferences.
         </ThemedText>
 
         <View
@@ -90,11 +95,16 @@ export function SettingsScreen() {
             flexDirection: 'row',
             alignItems: 'center',
             marginBottom: spacing.xl,
-            backgroundColor: colors.surface,
+            backgroundColor: colors.surfaceElevated,
             padding: spacing.lg,
             borderRadius: radii.lg,
             borderWidth: 1,
             borderColor: colors.border,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 6 },
+            shadowOpacity: 0.08,
+            shadowRadius: 12,
+            elevation: 5,
           }}
         >
           {user?.imageUrl ? (
@@ -111,39 +121,150 @@ export function SettingsScreen() {
           </View>
         </View>
 
-        <AppButton title="Export data" variant="secondary" onPress={onExport} loading={busy} />
-        <View style={{ height: spacing.sm }} />
-        <AppButton title="Import data" variant="secondary" onPress={onImport} loading={busy} />
-        <View style={{ height: spacing.lg }} />
-
-        <Pressable
-          onPress={cycleTheme}
+        <View
           style={{
-            padding: spacing.lg,
-            backgroundColor: colors.surface,
+            backgroundColor: colors.surfaceElevated,
             borderRadius: radii.lg,
             borderWidth: 1,
             borderColor: colors.border,
             marginBottom: spacing.lg,
+            overflow: 'hidden',
           }}
         >
-          <ThemedText variant="label" color="secondary">
-            Theme
+          <Pressable
+            onPress={cycleTheme}
+            disabled={busy}
+            style={({ pressed }) => ({
+              padding: spacing.lg,
+              borderBottomWidth: 1,
+              borderBottomColor: colors.border,
+              opacity: pressed ? 0.8 : 1,
+            })}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 19,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: colors.background,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  marginRight: spacing.sm,
+                }}
+              >
+                <Ionicons name="contrast-outline" size={18} color={colors.textSecondary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <ThemedText variant="label">Theme mode</ThemedText>
+                <ThemedText variant="caption" color="secondary" style={{ marginTop: 2 }}>
+                  {themeLabel}
+                </ThemedText>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+            </View>
+          </Pressable>
+          <Pressable
+            onPress={onImport}
+            disabled={busy}
+            style={({ pressed }) => ({
+              padding: spacing.lg,
+              borderBottomWidth: 1,
+              borderBottomColor: colors.border,
+              opacity: busy ? 0.6 : pressed ? 0.8 : 1,
+            })}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 19,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: colors.background,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  marginRight: spacing.sm,
+                }}
+              >
+                <Ionicons name="cloud-upload-outline" size={18} color={colors.textSecondary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <ThemedText variant="label">Import vault</ThemedText>
+                <ThemedText variant="caption" color="secondary" style={{ marginTop: 2 }}>
+                  JSON files
+                </ThemedText>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+            </View>
+          </Pressable>
+          <Pressable
+            onPress={onExport}
+            disabled={busy}
+            style={({ pressed }) => ({
+              padding: spacing.lg,
+              opacity: busy ? 0.6 : pressed ? 0.8 : 1,
+            })}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 19,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: colors.background,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  marginRight: spacing.sm,
+                }}
+              >
+                <Ionicons name="cloud-download-outline" size={18} color={colors.textSecondary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <ThemedText variant="label">Export vault</ThemedText>
+                <ThemedText variant="caption" color="secondary" style={{ marginTop: 2 }}>
+                  Download your resources
+                </ThemedText>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+            </View>
+          </Pressable>
+        </View>
+        {busy ? (
+          <ThemedText variant="caption" color="secondary" style={{ marginBottom: spacing.lg }}>
+            Processing data operation...
           </ThemedText>
-          <ThemedText style={{ marginTop: spacing.xs }}>{themeLabel}</ThemedText>
-          <ThemedText variant="caption" color="muted" style={{ marginTop: spacing.xs }}>
-            Tap to cycle: system → light → dark
-          </ThemedText>
-        </Pressable>
+        ) : null}
 
-        <AppButton
-          title="Sign out"
-          variant="danger"
+        <Pressable
           onPress={() => {
             void signOut();
           }}
-        />
+          style={({ pressed }) => ({
+            backgroundColor: colors.surfaceElevated,
+            borderRadius: radii.lg,
+            borderWidth: 1,
+            borderColor: colors.border,
+            paddingVertical: spacing.md + 2,
+            paddingHorizontal: spacing.lg,
+            alignItems: 'center',
+            justifyContent: 'center',
+            opacity: pressed ? 0.82 : 1,
+          })}
+        >
+          <ThemedText variant="label" color="danger">
+            Sign out
+          </ThemedText>
+        </Pressable>
       </ScrollView>
+      <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}>
+        <AppFooter current="Settings" />
+      </View>
     </SafeAreaView>
   );
 }

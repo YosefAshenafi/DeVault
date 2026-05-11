@@ -38,6 +38,9 @@ function toInput(row: Record<string, unknown>): ResourceInput | null {
     note: asString(row.note),
     tags: asString(row.tags),
     thumbnailUrl: asStringOrNull(row.thumbnailUrl),
+    description: asStringOrNull(row.description),
+    siteName: asStringOrNull(row.siteName),
+    favicon: asStringOrNull(row.favicon),
   };
 }
 

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppButton } from '../components/AppButton';
+import { AppFooter } from '../components/AppFooter';
 import { AppTextInput } from '../components/AppTextInput';
 import { ThemedText } from '../components/ThemedText';
 import { ThumbnailPreview } from '../components/ThumbnailPreview';
@@ -16,7 +17,7 @@ import { useResourcesContext } from '../context/ResourcesContext';
 import { fetchPageMetadata } from '../utils/fetchMetadata';
 
 export function AddEditResourceScreen() {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, radii } = useTheme();
   const navigation = useNavigation();
   const route = useRoute();
   const { userId } = useAuthUser();
@@ -32,6 +33,9 @@ export function AddEditResourceScreen() {
   const [note, setNote] = useState('');
   const [tags, setTags] = useState('');
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+  const [description, setDescription] = useState<string | null>(null);
+  const [siteName, setSiteName] = useState<string | null>(null);
+  const [favicon, setFavicon] = useState<string | null>(null);
   const [metaLoading, setMetaLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,6 +50,9 @@ export function AddEditResourceScreen() {
         setNote(existing.note);
         setTags(existing.tags);
         setThumbnailUrl(existing.thumbnailUrl);
+        setDescription(existing.description);
+        setSiteName(existing.siteName);
+        setFavicon(existing.favicon);
       }
     })();
   }, [userId, editId]);
@@ -66,6 +73,15 @@ export function AddEditResourceScreen() {
         }
         if (meta.thumbnailUrl) {
           setThumbnailUrl((prev) => prev ?? meta.thumbnailUrl ?? null);
+        }
+        if (meta.description) {
+          setDescription((prev) => prev ?? meta.description ?? null);
+        }
+        if (meta.siteName) {
+          setSiteName(meta.siteName ?? null);
+        }
+        if (meta.favicon) {
+          setFavicon(meta.favicon ?? null);
         }
       } catch {
         /* keep user fields */
@@ -89,8 +105,11 @@ export function AddEditResourceScreen() {
         .filter(Boolean)
         .join(', '),
       thumbnailUrl,
+      description,
+      siteName,
+      favicon,
     }),
-    [title, url, note, tags, thumbnailUrl],
+    [title, url, note, tags, thumbnailUrl, description, siteName, favicon],
   );
 
   const onSave = useCallback(async () => {
@@ -125,7 +144,7 @@ export function AddEditResourceScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
       <ScrollView
-        contentContainerStyle={{ padding: spacing.lg, paddingBottom: spacing.xxl }}
+        contentContainerStyle={{ padding: spacing.lg, paddingBottom: spacing.xxl + 96 }}
         keyboardShouldPersistTaps="handled"
       >
         <Pressable
@@ -150,8 +169,25 @@ export function AddEditResourceScreen() {
         <ThemedText variant="title" style={{ marginBottom: spacing.md }}>
           {editId ? 'Edit resource' : sharePayload ? 'Add from share' : 'Add resource'}
         </ThemedText>
+        <ThemedText color="secondary" style={{ marginBottom: spacing.md }}>
+          Save a snippet or link to your vault.
+        </ThemedText>
 
-        <ThumbnailPreview thumbnailUrl={thumbnailUrl} title={title || 'New'} url={url} height={180} />
+        <View
+          style={{
+            backgroundColor: colors.surfaceElevated,
+            borderWidth: 1,
+            borderColor: colors.border,
+            borderRadius: radii.lg,
+            padding: spacing.md,
+            marginBottom: spacing.md,
+          }}
+        >
+          <ThemedText variant="label" color="secondary" style={{ marginBottom: spacing.sm }}>
+            Preview
+          </ThemedText>
+          <ThumbnailPreview thumbnailUrl={thumbnailUrl} title={title || 'New'} url={url} height={180} />
+        </View>
         {metaLoading ? (
           <View style={{ alignItems: 'center', marginVertical: spacing.sm }}>
             <ActivityIndicator color={colors.primary} />
@@ -161,21 +197,31 @@ export function AddEditResourceScreen() {
           </View>
         ) : null}
 
-        <AppTextInput label="Title" value={title} onChangeText={setTitle} />
-        <AppTextInput
-          label={requireUrl ? 'URL' : 'URL (optional)'}
-          value={url}
-          onChangeText={setUrl}
-          autoCapitalize="none"
-          editable={!editId || true}
-        />
-        <AppTextInput label="Note" value={note} onChangeText={setNote} multiline numberOfLines={4} />
-        <AppTextInput
-          label="Tags (comma-separated)"
-          value={tags}
-          onChangeText={setTags}
-          placeholder="android, ui, career"
-        />
+        <View
+          style={{
+            backgroundColor: colors.surfaceElevated,
+            borderWidth: 1,
+            borderColor: colors.border,
+            borderRadius: radii.lg,
+            padding: spacing.md,
+          }}
+        >
+          <AppTextInput
+            label={requireUrl ? 'Source URL' : 'Source URL (optional)'}
+            value={url}
+            onChangeText={setUrl}
+            autoCapitalize="none"
+            editable={!editId || true}
+          />
+          <AppTextInput label="Resource title" value={title} onChangeText={setTitle} />
+          <AppTextInput
+            label="Tags"
+            value={tags}
+            onChangeText={setTags}
+            placeholder="android, ui, career"
+          />
+          <AppTextInput label="Quick notes" value={note} onChangeText={setNote} multiline numberOfLines={4} />
+        </View>
 
         {error ? (
           <ThemedText color="danger" style={{ marginBottom: spacing.md }}>
@@ -183,8 +229,13 @@ export function AddEditResourceScreen() {
           </ThemedText>
         ) : null}
 
-        <AppButton title={editId ? 'Save changes' : 'Save'} onPress={onSave} loading={saving} />
+        <AppButton title={editId ? 'Save changes' : 'Save resource'} onPress={onSave} loading={saving} />
+        <View style={{ height: spacing.sm }} />
+        <AppButton title="Cancel" variant="ghost" onPress={() => navigation.goBack()} />
       </ScrollView>
+      <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}>
+        <AppFooter current="AddEdit" />
+      </View>
     </SafeAreaView>
   );
 }
